@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Text;
 using System.IO;
+using PuppeteerSharp;
 
 namespace WebScraper.Controllers
 {
@@ -25,13 +26,39 @@ namespace WebScraper.Controllers
             _logger = logger;
         }
 
-        public IActionResult Index()
+        //public IActionResult Index()
+        //{
+        //    string url = "https://en.wikipedia.org/wiki/List_of_programmers";
+        //    var response = CallUrl(url).Result;
+        //    var linkList = ParseHtml(response);
+        //    WriteToCsv(linkList);
+        //    return View();
+        //}
+
+        public async Task<IActionResult> Index()
         {
-            string url = "https://en.wikipedia.org/wiki/List_of_programmers";
-            var response = CallUrl(url).Result;
-            var linkList = ParseHtml(response);
-            WriteToCsv(linkList);
+            string fullUrl = "https://www.tesco.com/groceries/en-GB/shop/fresh-food/all";
+            List<string> programmerLinks = new List<string>();
+
+            var options = new LaunchOptions()
+            {
+                Headless = true,
+                ExecutablePath = @"C:\Program Files\Google\Chrome\Application\chrome.exe"
+            };
+            var browser = await Puppeteer.LaunchAsync(options, null);
+            var page = await browser.NewPageAsync();
+            await page.GoToAsync(fullUrl);
+            //var links = @"Array.from(document.querySelectorAll('a')).map(a => a.href);";
+            var links = @"Array.from(document.querySelectorAll('product-details--wrapper'));";
+            var urls = await page.EvaluateExpressionAsync<string[]>(links);
+
+            //foreach (string url in urls)
+            //{
+            //    programmerLinks.Add(url);
+            //}
+
             return View();
+
         }
 
         private static async Task<string> CallUrl(string fullUrl)
